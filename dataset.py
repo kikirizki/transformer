@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 from os.path import exists
 import wget
+from nltk.tokenize import word_tokenize
 
 
 class AliceInTheWonderlandDataset(Dataset):
@@ -14,8 +15,8 @@ class AliceInTheWonderlandDataset(Dataset):
         with open(dataset_path) as f:
             self.alice_strings = "".join(f.readlines())
         self.alice_strings = self.preprocess(self.alice_strings)
-
-        print(self.alice_strings)
+        self.alice_strings = word_tokenize(self.alice_strings)
+        self.bag_of_words = sorted(list(set(self.alice_strings)))
 
     def preprocess(self, text):
         text = text.lower()
