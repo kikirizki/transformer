@@ -10,3 +10,15 @@ class AliceInTheWonderlandDataset(Dataset):
         if not exists(dataset_path):
             print("Dataset is not found, downloading")
             wget.download(dataset_download_url, dataset_path)
+        self.alice_strings = None
+        with open(dataset_path) as f:
+            self.alice_strings = "".join(f.readlines())
+        self.alice_strings = self.preprocess(self.alice_strings)
+
+        print(self.alice_strings)
+
+    def preprocess(self, text):
+        text = text.lower()
+        text = text.replace("(","").replace(")","")
+        text = ' '.join(text.split())
+        return text
