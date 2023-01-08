@@ -13,13 +13,13 @@ class AliceInTheWonderlandDataset(Dataset):
         if not exists(dataset_path):
             print("Dataset is not found, downloading")
             wget.download(dataset_download_url, dataset_path)
-        self.alice_strings = None
+        self.raw_text = None
         with open(dataset_path) as f:
-            self.alice_strings = "".join(f.readlines())
-        self.alice_strings = self.preprocess(self.alice_strings)
-        self.alice_strings = word_tokenize(self.alice_strings)
-        self.vocabularies = sorted(list(set(self.alice_strings)))
-        self.alice_strings = self.chunks_string(self.alice_strings, num_words)
+            self.raw_text = "".join(f.readlines())
+        self.preprocessed_text = self.preprocess(self.raw_text)
+        self.tokenized_text = word_tokenize(self.preprocessed_text)
+        self.vocabularies = sorted(list(set(self.tokenized_text)))
+        self.chunked_tokenized_text = self.chunks_string(self.tokenized_text, num_words)
 
     def chunks_string(self, text, length):
         return np.array_split(text, math.ceil(len(text) / length))
@@ -37,4 +37,4 @@ class AliceInTheWonderlandDataset(Dataset):
         return [self.vocabularies[idx] for idx in indexes]
 
     def __getitem__(self, idx):
-        return self.sentence_to_index(self.alice_strings[idx])
+        return self.sentence_to_index(self.chunked_tokenized_text[idx])
