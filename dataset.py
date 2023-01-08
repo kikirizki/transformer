@@ -13,14 +13,15 @@ class AliceInTheWonderlandDataset(Dataset):
         if not exists(dataset_path):
             print("Dataset is not found, downloading")
             wget.download(dataset_download_url, dataset_path)
-        self.raw_text = None
-        with open(dataset_path) as f:
-            self.raw_text = "".join(f.readlines())
+        self.raw_text = self.read_text_file(dataset_path)
         self.preprocessed_text = self.preprocess(self.raw_text)
         self.tokenized_text = word_tokenize(self.preprocessed_text)
         self.vocabularies = sorted(list(set(self.tokenized_text)))
         self.chunked_tokenized_text = self.chunks_string(self.tokenized_text, num_words)
-
+    def read_text_file(self, file_path):
+        with open(file_path) as f:
+            raw_text = "".join(f.readlines())
+        return raw_text
     def chunks_string(self, text, length):
         return np.array_split(text, math.ceil(len(text) / length))
 
