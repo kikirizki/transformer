@@ -5,6 +5,7 @@ from nltk.tokenize import word_tokenize
 import math
 import numpy as np
 
+
 class AliceInTheWonderlandDataset(Dataset):
     def __init__(self, num_words):
         dataset_path = "alice_in_wonderland.txt"
@@ -20,7 +21,7 @@ class AliceInTheWonderlandDataset(Dataset):
         self.vocabularies = sorted(list(set(self.alice_strings)))
         self.alice_strings = self.chunks_string(self.alice_strings, num_words)
 
-    def chunks_string(self,text, length):
+    def chunks_string(self, text, length):
         return np.array_split(text, math.ceil(len(text) / length))
 
     def preprocess(self, text):
@@ -29,8 +30,11 @@ class AliceInTheWonderlandDataset(Dataset):
         text = ' '.join(text.split())
         return text
 
-    def sentence_to_index(self,text):
+    def sentence_to_index(self, text):
         return [self.vocabularies.index(word) for word in text]
 
     def index_to_sentence(self, indexes):
         return [self.vocabularies[idx] for idx in indexes]
+
+    def __getitem__(self, idx):
+        return self.sentence_to_index(self.alice_strings[idx])
