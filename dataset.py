@@ -2,7 +2,8 @@ from torch.utils.data import Dataset
 from os.path import exists
 import wget
 from nltk.tokenize import word_tokenize
-
+import math
+import numpy as np
 
 class AliceInTheWonderlandDataset(Dataset):
     def __init__(self, num_words):
@@ -17,7 +18,10 @@ class AliceInTheWonderlandDataset(Dataset):
         self.alice_strings = self.preprocess(self.alice_strings)
         self.alice_strings = word_tokenize(self.alice_strings)
         self.vocabularies = sorted(list(set(self.alice_strings)))
-        self.num_words = num_words
+        self.alice_strings = self.chunks_string(self.alice_strings, num_words)
+
+    def chunks_string(self,text, length):
+        return np.array_split(text, math.ceil(len(text) / length))
 
     def preprocess(self, text):
         text = text.lower()
