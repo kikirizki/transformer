@@ -28,3 +28,5 @@ class AliceInTheWonderlandDataset(Dataset):
     def sentence_to_index(self,text):
         return [self.vocabularies.index(word) for word in text]
 
+    def index_to_sentence(self, indexes):
+        return [self.vocabularies[idx] for idx in indexes]
