@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from dataset import AliceInTheWonderlandDataset
-
+import numpy as np
 from model import Transformer
 from einops import rearrange
 
@@ -27,14 +27,20 @@ def train(model, dataset_loader, optimizer, criterion):
     for i, batch in enumerate(dataset_loader):
         x, y = batch
         encoder_input = rearrange(x, "batch_size sequence_length -> sequence_length batch_size")
-        target = rearrange(y, "batch_size sequence_length -> sequence_length batch_size")
+        y = rearrange(y, "batch_size sequence_length -> sequence_length batch_size")
 
-        decoder_input = target[:-1, :]
+        decoder_input = y[:-1, :]
 
-        out = model(encoder_input, decoder_input)
-        print(out.shape)
-        break
+        output = model(encoder_input, decoder_input)
+        target = torch.nn.functional.one_hot(y % 1, num_classes=n_vocabs)[1:, :].view(-1, n_vocabs).to(float)
+
+        loss = criterion(output.view(-1, n_vocabs), target)
+
+        optimizer.zero_grad()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
+        optimizer.step()
 
 
 if __name__ == '__main__':
-    train(model, dataset_loader, None, criterion)
+    train(model, dataset_loader, optimizer, criterion)
