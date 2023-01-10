@@ -13,7 +13,7 @@ n_words = 7
 dropout_prob = 0.8
 
 alice_dataset = AliceInTheWonderlandDataset(n_words)
-dataset_loader = DataLoader(alice_dataset, batch_size=batch_Size)
+dataset_loader = DataLoader(alice_dataset, batch_size=batch_Size, drop_last=True)
 n_vocabs = alice_dataset.get_vocabulary_length()
 
 model = Transformer(d_model, n_vocabs)
