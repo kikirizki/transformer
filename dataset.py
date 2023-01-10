@@ -47,3 +47,6 @@ class AliceInTheWonderlandDataset(Dataset):
 
     def __len__(self):
         return self.length
+
+    def get_vocabulary_length(self):
+        return len(self.vocabularies)
