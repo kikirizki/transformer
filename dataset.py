@@ -43,7 +43,7 @@ class AliceInTheWonderlandDataset(Dataset):
     def __getitem__(self, idx):
         source = self.sentence_to_index(self.chunked_tokenized_text[idx])
         target = self.sentence_to_index(self.chunked_tokenized_text[(idx + 1) % self.length])
-        return {"source": source, "target": target}
+        return source, target
 
     def __len__(self):
         return self.length
