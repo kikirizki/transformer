@@ -5,14 +5,15 @@ from einops import rearrange
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, d_model, num_heads, d_k):
+    def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()
-        self.d_k = d_k
+        assert d_model%num_heads == 0
+        self.d_k = d_model//num_heads
         self.num_heads = num_heads
         self.d_model = d_model
-        self.softargmax = nn.Softmax(-1)
+        self.soft_argmax = nn.Softmax(-1)
         self.split_head = nn.Linear(d_model, self.d_k * num_heads)
-        self.W_o = nn.Linear(self.num_heads * d_k, d_model)
+        self.W_o = nn.Linear(self.num_heads * self.d_k, d_model)
 
     def split(self, x):
         x = self.split_head(x)
@@ -26,7 +27,7 @@ class MultiHeadAttention(nn.Module):
         score /= math.sqrt(self.d_k)
         if mask is not None:
             score = score.masked_fill(mask == 0, float('-inf'))
-        attention_matrix = self.softargmax(score)
+        attention_matrix = self.soft_argmax(score)
         out = torch.einsum("q k b h, k b h d-> q b h d", attention_matrix, value)
         out = rearrange(out, "seq_length batch_size heads d_k -> seq_length batch_size (heads d_k)",
                         heads=self.num_heads)
@@ -99,10 +100,10 @@ class TransformersLayer(nn.Module):
 
 
 class TransformersEncoder(nn.Module):
-    def __init__(self, d_model, ff_hidden_size, n_heads, d_k, dropout_prob):
+    def __init__(self, d_model, ff_hidden_size, n_heads, dropout_prob):
         super(TransformersEncoder, self).__init__()
         self.feed_forward = FeedForward(d_model, ff_hidden_size, dropout_prob)
-        self.self_attention = MultiHeadAttention(d_model, n_heads, d_k)
+        self.self_attention = MultiHeadAttention(d_model, n_heads)
         self.transformer_layer = TransformersLayer(d_model, self.self_attention, self.feed_forward, dropout_prob)
 
     def forward(self, x):
@@ -110,11 +111,11 @@ class TransformersEncoder(nn.Module):
 
 
 class TransformersDecoder(nn.Module):
-    def __init__(self, d_model, ff_hidden_size, n_heads, d_k, dropout_prob):
+    def __init__(self, d_model, ff_hidden_size, n_heads, dropout_prob):
         super(TransformersDecoder, self).__init__()
         self.feed_forward = FeedForward(d_model, ff_hidden_size, dropout_prob)
-        self.self_attention = MultiHeadAttention(d_model, n_heads, d_k)
-        self.source_attention = MultiHeadAttention(d_model, n_heads, d_k)
+        self.self_attention = MultiHeadAttention(d_model, n_heads)
+        self.source_attention = MultiHeadAttention(d_model, n_heads)
         self.transformer_layer = TransformersLayer(d_model,
                                                    self.self_attention,
                                                    self.feed_forward,
