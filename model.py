@@ -127,8 +127,10 @@ class TransformersDecoder(nn.Module):
 
 
 class Transformer(nn.Module):
-    def __init__(self):
+    def __init__(self, d_model, n_vocab):
         super(Transformer, self).__init__()
+        self.embedding = EmbeddingWithLearnablePositionalEncoding(d_model, n_vocab)
 
     def forward(self,x):
-        return x
+        embedded_input = self.embedding(x)
+        return embedded_input
