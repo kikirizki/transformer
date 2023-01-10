@@ -39,7 +39,7 @@ class EmbeddingWithLearnablePositionalEncoding(nn.Module):
     def __init__(self, d_model, n_vocab, max_sequence=5000):
         super(EmbeddingWithLearnablePositionalEncoding, self).__init__()
         self.linear = nn.Embedding(n_vocab, d_model)
-        self.positional_encoding = nn.Parameter(max_sequence, 1, d_model, requires_grad=True)
+        self.positional_encoding = nn.Parameter(torch.zeros([max_sequence, 1, d_model]), requires_grad=True)
         self.d_model = d_model
 
     def forward(self, sparse_input):
