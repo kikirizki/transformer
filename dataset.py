@@ -18,6 +18,7 @@ class AliceInTheWonderlandDataset(Dataset):
         self.tokenized_text = word_tokenize(self.preprocessed_text)
         self.vocabularies = sorted(list(set(self.tokenized_text)))
         self.chunked_tokenized_text = self.chunks_string(self.tokenized_text, num_words)
+        self.length = len(self.chunked_tokenized_text)
     def read_text_file(self, file_path):
         with open(file_path) as f:
             raw_text = "".join(f.readlines())
@@ -39,3 +40,6 @@ class AliceInTheWonderlandDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.sentence_to_index(self.chunked_tokenized_text[idx])
+
+    def __len__(self):
+        return self.length
