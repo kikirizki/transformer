@@ -27,6 +27,8 @@ def train(model, dataset_loader, optimizer, criterion):
         x = rearrange(x,"batch_size sequence_length -> sequence_length batch_size")
         y = rearrange(y,"batch_size sequence_length -> sequence_length batch_size")
 
+
+
         print(x.shape)
         out = model(x)
         print(out.shape)

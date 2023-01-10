@@ -6,6 +6,7 @@ import math
 import numpy as np
 import torch
 
+
 class AliceInTheWonderlandDataset(Dataset):
     def __init__(self, num_words):
         dataset_path = "alice_in_wonderland.txt"
@@ -16,7 +17,9 @@ class AliceInTheWonderlandDataset(Dataset):
         self.raw_text = self.read_text_file(dataset_path)
         self.preprocessed_text = self.preprocess(self.raw_text)
         self.tokenized_text = word_tokenize(self.preprocessed_text)
-        self.vocabularies = sorted(list(set(self.tokenized_text)))
+        self.start_token = "<SOS>"
+        self.end_token = "<EOS>"
+        self.vocabularies = [self.start_token, self.end_token] + sorted(list(set(self.tokenized_text)))
         self.chunked_tokenized_text = self.chunks_string(self.tokenized_text, num_words)
         self.length = len(self.chunked_tokenized_text)
 
@@ -41,9 +44,15 @@ class AliceInTheWonderlandDataset(Dataset):
         return [self.vocabularies[idx] for idx in indexes]
 
     def __getitem__(self, idx):
-        source = self.sentence_to_index(self.chunked_tokenized_text[idx])
-        target = self.sentence_to_index(self.chunked_tokenized_text[(idx + 1) % self.length])
-        return torch.tensor(source), torch.tensor(target)
+        raw_source_text = self.chunked_tokenized_text[idx]
+        raw_target_text = self.chunked_tokenized_text[(idx + 1) % self.length]
+
+        raw_source_text = [self.start_token] + list(raw_source_text) +[self.end_token]
+        raw_target_text = [self.start_token] + list(raw_target_text) +[self.end_token]
+
+        idx_source_text = self.sentence_to_index(raw_source_text)
+        idx_target_text = self.sentence_to_index(raw_target_text)
+        return torch.tensor(idx_source_text), torch.tensor(idx_target_text)
 
     def __len__(self):
         return self.length
