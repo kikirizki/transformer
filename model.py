@@ -7,8 +7,8 @@ from einops import rearrange
 class MultiHeadAttention(nn.Module):
     def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()
-        assert d_model%num_heads == 0
-        self.d_k = d_model//num_heads
+        assert d_model % num_heads == 0
+        self.d_k = d_model // num_heads
         self.num_heads = num_heads
         self.d_model = d_model
         self.soft_argmax = nn.Softmax(-1)
@@ -127,10 +127,13 @@ class TransformersDecoder(nn.Module):
 
 
 class Transformer(nn.Module):
-    def __init__(self, d_model, n_vocab):
+    def __init__(self, d_model, n_vocab, ff_hidden_size, n_heads, dropout_prob):
         super(Transformer, self).__init__()
         self.embedding = EmbeddingWithLearnablePositionalEncoding(d_model, n_vocab)
+        self.encoder = TransformersEncoder(d_model,ff_hidden_size, n_heads, dropout_prob)
+        self.decoder = TransformersDecoder(d_model,ff_hidden_size, n_heads, dropout_prob)
 
-    def forward(self,x):
-        embedded_input = self.embedding(x)
-        return embedded_input
+    def forward(self, encoder_input, decoder_input):
+        encoder_output = self.encoder(self.embedding(encoder_input))
+        decoder_output = self.decoder(self.embedding(decoder_input), src = encoder_output)
+        return decoder_output
