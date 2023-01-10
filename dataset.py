@@ -19,10 +19,12 @@ class AliceInTheWonderlandDataset(Dataset):
         self.vocabularies = sorted(list(set(self.tokenized_text)))
         self.chunked_tokenized_text = self.chunks_string(self.tokenized_text, num_words)
         self.length = len(self.chunked_tokenized_text)
+
     def read_text_file(self, file_path):
         with open(file_path) as f:
             raw_text = "".join(f.readlines())
         return raw_text
+
     def chunks_string(self, text, length):
         return np.array_split(text, math.ceil(len(text) / length))
 
@@ -39,7 +41,9 @@ class AliceInTheWonderlandDataset(Dataset):
         return [self.vocabularies[idx] for idx in indexes]
 
     def __getitem__(self, idx):
-        return self.sentence_to_index(self.chunked_tokenized_text[idx])
+        source = self.sentence_to_index(self.chunked_tokenized_text[idx])
+        target = self.sentence_to_index(self.chunked_tokenized_text[(idx + 1) % self.length])
+        return {"source": source, "target": target}
 
     def __len__(self):
         return self.length
