@@ -123,3 +123,11 @@ class TransformersDecoder(nn.Module):
 
     def forward(self, x, src):
         return self.transformer_layer(x, src)
+
+
+class Transformer(nn.Module):
+    def __init__(self):
+        super(Transformer, self).__init__()
+
+    def forward(self,x):
+        return x
