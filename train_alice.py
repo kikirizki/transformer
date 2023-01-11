@@ -1,10 +1,10 @@
 import torch
+from einops import rearrange
 from torch import nn
 from torch.utils.data import DataLoader
+
 from dataset import AliceInTheWonderlandDataset
-import numpy as np
 from model import Transformer
-from einops import rearrange
 
 d_model = 512
 n_heads = 2
