@@ -133,9 +133,11 @@ class Transformer(nn.Module):
         self.encoder = TransformersEncoder(d_model,ff_hidden_size, n_heads, dropout_prob)
         self.decoder = TransformersDecoder(d_model,ff_hidden_size, n_heads, dropout_prob)
         self.linear = torch.nn.Linear(d_model,n_vocab)
+        self.softargmax = torch.nn.Softmax(dim=2)
 
     def forward(self, encoder_input, decoder_input):
         encoder_output = self.encoder(self.embedding(encoder_input))
         decoder_output = self.decoder(self.embedding(decoder_input), src = encoder_output)
         output = self.linear(decoder_output)
-        return output
+        probability = self.softargmax(output)
+        return probability
