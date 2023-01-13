@@ -47,8 +47,8 @@ class AliceInTheWonderlandDataset(Dataset):
         raw_source_text = self.chunked_tokenized_text[idx]
         raw_target_text = self.chunked_tokenized_text[(idx + 1) % self.length]
 
-        raw_source_text = [self.start_token] + list(raw_source_text) +[self.end_token]
-        raw_target_text = [self.start_token] + list(raw_target_text) +[self.end_token]
+        raw_source_text = [self.start_token] + list(raw_source_text) + [self.end_token]
+        raw_target_text = [self.start_token] + list(raw_target_text) + [self.end_token]
 
         idx_source_text = self.sentence_to_index(raw_source_text)
         idx_target_text = self.sentence_to_index(raw_target_text)
@@ -60,6 +60,23 @@ class AliceInTheWonderlandDataset(Dataset):
     def get_vocabulary_length(self):
         return len(self.vocabularies)
 
+
 class Multi30kDatasetEN_DE(Dataset):
     def __init__(self):
-        pass
+        self.test_de_links = [
+            "https://github.com/multi30k/dataset/raw/master/data/task1/raw/test_2016_flickr.de.gz",
+            "https://github.com/multi30k/dataset/raw/master/data/task1/raw/test_2017_flickr.de.gz",
+            "https://github.com/multi30k/dataset/raw/master/data/task1/raw/test_2017_mscoco.de.gz",
+            "https://github.com/multi30k/dataset/raw/master/data/task1/raw/test_2018_flickr.de.gz"]
+
+        self.test_en_links = [
+            "https://github.com/multi30k/dataset/raw/master/data/task1/raw/test_2016_flickr.en.gz",
+            "https://github.com/multi30k/dataset/raw/master/data/task1/raw/test_2017_flickr.en.gz",
+            "https://github.com/multi30k/dataset/raw/master/data/task1/raw/test_2017_mscoco.en.gz",
+            "https://github.com/multi30k/dataset/raw/master/data/task1/raw/test_2018_flickr.en.gz"]
+
+        self.train_en_links = ["https://github.com/multi30k/dataset/blob/master/data/task1/raw/train.en.gz"]
+        self.train_de_links = ["https://github.com/multi30k/dataset/blob/master/data/task1/raw/train.de.gz"]
+
+        self.val_en_links = ["https://github.com/multi30k/dataset/raw/master/data/task1/raw/val.en.gz"]
+        self.val_de_links = ["https://github.com/multi30k/dataset/raw/master/data/task1/raw/val.de.gz"]
