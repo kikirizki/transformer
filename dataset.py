@@ -59,3 +59,7 @@ class AliceInTheWonderlandDataset(Dataset):
 
     def get_vocabulary_length(self):
         return len(self.vocabularies)
+
+class Multi30kDatasetEN_DE(Dataset):
+    def __init__(self):
+        pass
