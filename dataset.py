@@ -1,12 +1,13 @@
-from torch.utils.data import Dataset
-from os.path import exists
-import wget
-from nltk.tokenize import word_tokenize
 import math
+import os
+from os.path import exists
+from pathlib import Path
+
 import numpy as np
 import torch
-import os
-from pathlib import Path
+import wget
+from nltk.tokenize import word_tokenize
+from torch.utils.data import Dataset
 
 
 class AliceInTheWonderlandDataset(Dataset):
@@ -64,17 +65,32 @@ class AliceInTheWonderlandDataset(Dataset):
 
 
 class Multi30kDatasetEN_DE(Dataset):
-    def __init__(self, dataset_root="./multi30k_dataset"):
+    def __init__(self, dataset_root="multi30k_dataset"):
         dataset_root_link = "https://github.com/multi30k/dataset/raw/master/data/task1/raw/"
         self.dataset_filename = [
             "test_2016_flickr.de.gz", "test_2017_flickr.de.gz", "test_2017_mscoco.de.gz", "test_2018_flickr.de.gz",
             "test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz", "test_2018_flickr.en.gz",
             "train.de.gz", "train.de.gz",
             "val.en.gz", "val.de.gz"]
-        self.dataset_link = [os.path.join(dataset_root_link, filename) for filename in self.dataset_filename]
+        self.dataset_links = [os.path.join(dataset_root_link, filename) for filename in self.dataset_filename]
         self.dataset_root = dataset_root
+        if not self.is_downloaded():
+            print("Dataset is not found in local directory")
+            self.download_dataset()
+        else:
+            print("Dataset is found in local directory")
 
     def download_dataset(self):
+        def bar_custom(current, total, width=80):
+            progress = int(current / total * 10)*"-"+(10-int(current / total * 10))*" "
+            print(f"Downloading: [{progress}] {current/1000000} MB/{total/1000000} MB")
+        print("Downloading dataset")
         Path(self.dataset_root).mkdir(parents=True, exist_ok=True)
         for data_url in self.dataset_links:
-            wget.download(data_url, out=self.dataset_root)
+            wget.download(data_url, out=self.dataset_root, bar=bar_custom)
+
+    def is_downloaded(self):
+        for filename in self.dataset_filename:
+            if not os.path.exists(os.path.join(self.dataset_root, filename)):
+                return False
+        return True
