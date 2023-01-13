@@ -66,25 +66,15 @@ class AliceInTheWonderlandDataset(Dataset):
 class Multi30kDatasetEN_DE(Dataset):
     def __init__(self, dataset_root="./multi30k_dataset"):
         dataset_root_link = "https://github.com/multi30k/dataset/raw/master/data/task1/raw/"
-        test_de_links = [os.path.join(dataset_root_link, item) for item in
-                         ["test_2016_flickr.de.gz", "test_2017_flickr.de.gz", "test_2017_mscoco.de.gz",
-                          "test_2018_flickr.de.gz"]]
-
-        test_en_links = [os.path.join(dataset_root_link, item) for item in
-                         ["test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
-                          "test_2018_flickr.en.gz"]]
-
-        train_en_links = [os.path.join(dataset_root_link, "train.de.gz")]
-        train_de_links = [os.path.join(dataset_root_link, "train.de.gz")]
-
-        val_en_links = [os.path.join(dataset_root_link, "val.en.gz")]
-        val_de_links = [os.path.join(dataset_root_link, "val.de.gz")]
-        self.dataset_links = test_en_links + test_de_links + train_en_links + train_de_links + val_en_links + val_de_links
-
+        self.dataset_filename = [
+            "test_2016_flickr.de.gz", "test_2017_flickr.de.gz", "test_2017_mscoco.de.gz", "test_2018_flickr.de.gz",
+            "test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz", "test_2018_flickr.en.gz",
+            "train.de.gz", "train.de.gz",
+            "val.en.gz", "val.de.gz"]
+        self.dataset_link = [os.path.join(dataset_root_link, filename) for filename in self.dataset_filename]
         self.dataset_root = dataset_root
 
     def download_dataset(self):
         Path(self.dataset_root).mkdir(parents=True, exist_ok=True)
         for data_url in self.dataset_links:
             wget.download(data_url, out=self.dataset_root)
-
