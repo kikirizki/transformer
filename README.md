@@ -1,6 +1,6 @@
 # Transformer
 
-This is some implementations of transformers and it's variants, the code is written with readability in mind. To keep the code clean, this repo mainly leverege the power of einops and einsum 
+This is some implementations of  *Transformer: Attention Is All You Need*  and it's variants, the code is written with readability in mind. To keep the code clean, this repo rely on the power of einops and einsum 
 
 ## Citations
 
