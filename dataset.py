@@ -8,7 +8,7 @@ import torch
 import wget
 from nltk.tokenize import word_tokenize
 from torch.utils.data import Dataset
-
+import gzip
 
 class AliceInTheWonderlandDataset(Dataset):
     def __init__(self, num_words):
@@ -79,7 +79,7 @@ class Multi30kDatasetEN_DE(Dataset):
             self.download_dataset()
         else:
             print("Dataset is found in local directory")
-
+        self.unzip_files([os.path.join(self.dataset_root,filename) for filename in self.dataset_filename])
     def download_dataset(self):
         def bar_custom(current, total, width=80):
             progress = int(current / total * 10)*"-"+(10-int(current / total * 10))*" "
@@ -94,3 +94,11 @@ class Multi30kDatasetEN_DE(Dataset):
             if not os.path.exists(os.path.join(self.dataset_root, filename)):
                 return False
         return True
+
+    def unzip_files(self, file_path_list):
+        for path in file_path_list:
+            output_path = path.replace(".gz",".txt")
+            op = open(output_path, "w")
+            with gzip.open(path, "rb") as ip_byte:
+                op.write(ip_byte.read().decode("utf-8"))
+                op.close()
