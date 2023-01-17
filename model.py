@@ -122,8 +122,8 @@ class TransformersDecoder(nn.Module):
                                                    dropout_prob,
                                                    self.source_attention)
 
-    def forward(self, x, src):
-        return self.transformer_layer(x, src)
+    def forward(self, x, src, mask = None):
+        return self.transformer_layer(x, src, src_mask = mask)
 
 
 class Transformer(nn.Module):
@@ -135,9 +135,9 @@ class Transformer(nn.Module):
         self.linear = torch.nn.Linear(d_model,n_vocab)
         self.softargmax = torch.nn.Softmax(dim=2)
 
-    def forward(self, encoder_input, decoder_input):
+    def forward(self, encoder_input, decoder_input, mask=None):
         encoder_output = self.encoder(self.embedding(encoder_input))
-        decoder_output = self.decoder(self.embedding(decoder_input), src = encoder_output)
+        decoder_output = self.decoder(self.embedding(decoder_input), src = encoder_output, mask = mask)
         output = self.linear(decoder_output)
         probability = self.softargmax(output)
         return probability
