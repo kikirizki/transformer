@@ -4,7 +4,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from dataset import AliceInTheWonderlandDataset
-from model import Transformer
+from vanilla_transformer import VanillaTransformer
 
 d_model = 512
 n_heads = 2
@@ -19,7 +19,7 @@ alice_dataset = AliceInTheWonderlandDataset(n_words)
 dataset_loader = DataLoader(alice_dataset, batch_size=batch_Size, drop_last=True)
 n_vocabs = alice_dataset.get_vocabulary_length()
 
-model = Transformer(d_model, n_vocabs, ff_hidden_size, n_heads, dropout_prob)
+model = VanillaTransformer(d_model, n_vocabs, ff_hidden_size, n_heads, dropout_prob)
 optimizer = torch.optim.Adam(params=model.parameters())
 criterion = nn.CrossEntropyLoss()
 
