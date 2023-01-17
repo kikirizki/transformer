@@ -24,6 +24,7 @@ optimizer = torch.optim.Adam(params=model.parameters())
 criterion = nn.CrossEntropyLoss()
 
 def train(model, dataset_loader, optimizer, criterion, num_epochs):
+    mask = torch.triu(torch.ones(n_words, n_words) * float('-inf'), diagonal=1)
     model.train()
     for epoch in range(num_epochs):
         loss_epoch = 0.0
