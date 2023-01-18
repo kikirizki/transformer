@@ -69,9 +69,9 @@ class Multi30kDatasetEN_DE(Dataset):
     def __init__(self, dataset_root="multi30k_dataset"):
         dataset_root_link = "https://github.com/multi30k/dataset/raw/master/data/task1/raw/"
         self.test_dataset_filename = ["test_2016_flickr.de.gz", "test_2017_flickr.de.gz", "test_2017_mscoco.de.gz",
-                                      "test_2018_flickr.de.gz",
+                                      "test_2018_flickr.de.gz"
                                       "test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
-                                      "test_2018_flickr.en.gz", ]
+                                      "test_2018_flickr.en.gz" ]
         self.train_dataset_filename = ["train.de.gz", "train.de.gz"]
         self.val_dataset_filename = ["val.en.gz", "val.de.gz"]
         self.dataset_filename = self.test_dataset_filename + self.train_dataset_filename + self.val_dataset_filename
@@ -83,7 +83,7 @@ class Multi30kDatasetEN_DE(Dataset):
         else:
             print("Dataset is found in local directory")
         self.unzip_files([os.path.join(self.dataset_root, filename) for filename in self.dataset_filename])
-
+        self.read_dataset()
     def download_dataset(self):
         def bar_custom(current, total, width=80):
             progress = int(current / total * 10) * "-" + (10 - int(current / total * 10)) * " "
@@ -107,3 +107,7 @@ class Multi30kDatasetEN_DE(Dataset):
             with gzip.open(path, "rb") as ip_byte:
                 op.write(ip_byte.read().decode("utf-8"))
                 op.close()
+    def read_dataset(self):
+        val_txt_filenames = [item.replace(".gz",".txt") for item in self.val_dataset_filename]
+        train_txt_filenames = [item.replace(".gz",".txt") for item in self.train_dataset_filename]
+        test_txt_filenames = [item.replace(".gz",".txt") for item in self.test_dataset_filename]
