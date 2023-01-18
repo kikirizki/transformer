@@ -10,6 +10,7 @@ from nltk.tokenize import word_tokenize
 from torch.utils.data import Dataset
 import gzip
 
+
 class AliceInTheWonderlandDataset(Dataset):
     def __init__(self, num_words):
         dataset_path = "alice_in_wonderland.txt"
@@ -67,11 +68,13 @@ class AliceInTheWonderlandDataset(Dataset):
 class Multi30kDatasetEN_DE(Dataset):
     def __init__(self, dataset_root="multi30k_dataset"):
         dataset_root_link = "https://github.com/multi30k/dataset/raw/master/data/task1/raw/"
-        self.dataset_filename = [
-            "test_2016_flickr.de.gz", "test_2017_flickr.de.gz", "test_2017_mscoco.de.gz", "test_2018_flickr.de.gz",
-            "test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz", "test_2018_flickr.en.gz",
-            "train.de.gz", "train.de.gz",
-            "val.en.gz", "val.de.gz"]
+        self.test_dataset_filename = ["test_2016_flickr.de.gz", "test_2017_flickr.de.gz", "test_2017_mscoco.de.gz",
+                                      "test_2018_flickr.de.gz",
+                                      "test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
+                                      "test_2018_flickr.en.gz", ]
+        self.train_dataset_filename = ["train.de.gz", "train.de.gz"]
+        self.val_dataset_filename = ["val.en.gz", "val.de.gz"]
+        self.dataset_filename = self.test_dataset_filename + self.train_dataset_filename + self.val_dataset_filename
         self.dataset_links = [os.path.join(dataset_root_link, filename) for filename in self.dataset_filename]
         self.dataset_root = dataset_root
         if not self.is_downloaded():
@@ -79,11 +82,13 @@ class Multi30kDatasetEN_DE(Dataset):
             self.download_dataset()
         else:
             print("Dataset is found in local directory")
-        self.unzip_files([os.path.join(self.dataset_root,filename) for filename in self.dataset_filename])
+        self.unzip_files([os.path.join(self.dataset_root, filename) for filename in self.dataset_filename])
+
     def download_dataset(self):
         def bar_custom(current, total, width=80):
-            progress = int(current / total * 10)*"-"+(10-int(current / total * 10))*" "
-            print(f"Downloading: [{progress}] {current/1000000} MB/{total/1000000} MB")
+            progress = int(current / total * 10) * "-" + (10 - int(current / total * 10)) * " "
+            print(f"Downloading: [{progress}] {current / 1000000} MB/{total / 1000000} MB")
+
         print("Downloading dataset")
         Path(self.dataset_root).mkdir(parents=True, exist_ok=True)
         for data_url in self.dataset_links:
@@ -97,7 +102,7 @@ class Multi30kDatasetEN_DE(Dataset):
 
     def unzip_files(self, file_path_list):
         for path in file_path_list:
-            output_path = path.replace(".gz",".txt")
+            output_path = path.replace(".gz", ".txt")
             op = open(output_path, "w")
             with gzip.open(path, "rb") as ip_byte:
                 op.write(ip_byte.read().decode("utf-8"))
