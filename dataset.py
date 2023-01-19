@@ -86,15 +86,15 @@ class Multi30kDatasetEN_DE(Dataset):
         else:
             print("Dataset is found in local directory")
         english_raw_list, german_raw_list = self.read_dataset()
-        english_tokenized_list = [word_tokenize(text, language="english") for text in english_raw_list]
-        german_tokenized_list = [word_tokenize(text, language="german") for text in german_raw_list]
+        self.english_tokenized_list = [word_tokenize(text, language="english") for text in english_raw_list]
+        self.german_tokenized_list = [word_tokenize(text, language="german") for text in german_raw_list]
         self.start_token = "<SOS>"
         self.end_token = "<EOS>"
         self.pad_token = "<PAD>"
-        english_vocab = self.get_vocab(english_tokenized_list)
-        german_vocab = self.get_vocab(german_tokenized_list)
-        english_max_seq = self.count_max_sequence(english_tokenized_list)
-        german_max_seq = self.count_max_sequence(german_tokenized_list)
+        self.english_vocab = self.get_vocab(self.english_tokenized_list)
+        self.german_vocab = self.get_vocab(self.german_tokenized_list)
+        self.english_max_seq = self.count_max_sequence(self.english_tokenized_list)
+        self.german_max_seq = self.count_max_sequence(self.german_tokenized_list)
 
     def words2indexes(self, list_of_word, vocab):
         word2index_dict = {word: idx for idx, word in enumerate(vocab)}
@@ -106,6 +106,10 @@ class Multi30kDatasetEN_DE(Dataset):
             vocab_list += tokenized_text
         vocab_list = sorted(list(set(vocab_list)))
         return vocab_list
+
+    def pad_words(self, list_of_words, max_sequence):
+        padded_words = list_of_words +(max_sequence-len(list_of_words))*[self.pad_token]
+        return padded_words
 
     def download_dataset(self):
         def bar_custom(current, total, width=80):

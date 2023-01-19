@@ -60,4 +60,5 @@ def train(model, dataset_loader, optimizer, criterion, num_epochs):
 if __name__ == '__main__':
     # train(model, dataset_loader, optimizer, criterion, num_epochs)
     dataset = Multi30kDatasetEN_DE()
+    print(dataset[5])
 
