@@ -100,6 +100,10 @@ class Multi30kDatasetEN_DE(Dataset):
         word2index_dict = {word: idx for idx, word in enumerate(vocab)}
         return [word2index_dict[word] for word in list_of_word]
 
+    def indexes2word(self, list_of_idx, vocab):
+        index2word_dict = {idx: word for idx, word in enumerate(vocab)}
+        return [index2word_dict[idx] for idx in list_of_idx]
+
     def get_vocab(self, tokenized_text_list):
         vocab_list = [self.pad_token, self.start_token, self.end_token]
         for tokenized_text in tokenized_text_list:
@@ -108,8 +112,20 @@ class Multi30kDatasetEN_DE(Dataset):
         return vocab_list
 
     def pad_words(self, list_of_words, max_sequence):
-        padded_words = list_of_words +(max_sequence-len(list_of_words))*[self.pad_token]
+        padded_words = list_of_words + (max_sequence - len(list_of_words)) * [self.pad_token]
         return padded_words
+
+    def __getitem__(self, idx):
+        english_word_list, german_word_list = self.english_tokenized_list[idx], self.german_tokenized_list[idx]
+        padded_english_words = self.pad_words(english_word_list, self.english_max_seq)
+        padded_german_words = self.pad_words(german_word_list, self.german_max_seq)
+
+        padded_english_words = [self.start_token]+padded_english_words+[self.end_token]
+        padded_german_words = [self.start_token]+padded_german_words+[self.end_token]
+
+        x = self.words2indexes(padded_english_words, self.english_vocab)
+        y = self.words2indexes(padded_german_words, self.german_vocab)
+        return x, y
 
     def download_dataset(self):
         def bar_custom(current, total, width=80):
