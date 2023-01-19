@@ -91,17 +91,17 @@ class Multi30kDatasetEN_DE(Dataset):
         self.start_token = "<SOS>"
         self.end_token = "<EOS>"
         self.pad_token = "<PAD>"
-        n_english_vocab = self.count_vocab(english_tokenized_list)
-        n_german_vocab = self.count_vocab(german_tokenized_list)
+        english_vocab = self.get_vocab(english_tokenized_list)
+        german_vocab = self.get_vocab(german_tokenized_list)
         english_max_seq = self.count_max_sequence(english_tokenized_list)
         german_max_seq = self.count_max_sequence(german_tokenized_list)
 
-    def count_vocab(self, tokenized_text_list):
+    def get_vocab(self, tokenized_text_list):
         vocab_list = [self.pad_token, self.start_token, self.end_token]
         for tokenized_text in tokenized_text_list:
             vocab_list += tokenized_text
         vocab_list = sorted(list(set(vocab_list)))
-        return len(vocab_list)
+        return vocab_list
 
     def download_dataset(self):
         def bar_custom(current, total, width=80):
