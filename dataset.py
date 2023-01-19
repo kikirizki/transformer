@@ -96,6 +96,10 @@ class Multi30kDatasetEN_DE(Dataset):
         english_max_seq = self.count_max_sequence(english_tokenized_list)
         german_max_seq = self.count_max_sequence(german_tokenized_list)
 
+    def words2indexes(self, list_of_word, vocab):
+        word2index_dict = {word: idx for idx, word in enumerate(vocab)}
+        return [word2index_dict[word] for word in list_of_word]
+
     def get_vocab(self, tokenized_text_list):
         vocab_list = [self.pad_token, self.start_token, self.end_token]
         for tokenized_text in tokenized_text_list:
@@ -146,5 +150,5 @@ class Multi30kDatasetEN_DE(Dataset):
     def count_max_sequence(self, tokenized_list):
         max = 0
         for text in tokenized_list:
-            max = len(text) if len(text)> max else max
+            max = len(text) if len(text) > max else max
         return max
