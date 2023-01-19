@@ -69,7 +69,7 @@ class Multi30kDatasetEN_DE(Dataset):
     def __init__(self, dataset_root="multi30k_dataset"):
         dataset_root_link = "https://github.com/multi30k/dataset/raw/master/data/task1/raw/"
         self.test_dataset_filename = ["test_2016_flickr.de.gz", "test_2017_flickr.de.gz", "test_2017_mscoco.de.gz",
-                                      "test_2018_flickr.de.gz"
+                                      "test_2018_flickr.de.gz",
                                       "test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
                                       "test_2018_flickr.en.gz" ]
         self.train_dataset_filename = ["train.de.gz", "train.de.gz"]
