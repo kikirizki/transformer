@@ -66,13 +66,17 @@ class AliceInTheWonderlandDataset(Dataset):
 
 
 class Multi30kDatasetEN_DE(Dataset):
-    def __init__(self, dataset_root="multi30k_dataset"):
+    def __init__(self, split="train", dataset_root="multi30k_dataset"):
         dataset_root_link = "https://github.com/multi30k/dataset/raw/master/data/task1/raw/"
+
         self.test_dataset_filename = ["test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
                                       "test_2018_flickr.en.gz"]
         self.train_dataset_filename = ["train.en.gz"]
         self.val_dataset_filename = ["val.en.gz"]
-        self.dataset_filename = self.test_dataset_filename + self.train_dataset_filename + self.val_dataset_filename
+
+        all_dataset_filename = {"train": self.train_dataset_filename, "test": self.test_dataset_filename,
+                                "val": self.val_dataset_filename}
+        self.dataset_filename = all_dataset_filename[split]
         self.dataset_links = [os.path.join(dataset_root_link, filename) for filename in self.dataset_filename]
         self.dataset_root = dataset_root
         if not self.is_downloaded():
@@ -81,8 +85,7 @@ class Multi30kDatasetEN_DE(Dataset):
             self.unzip_files([os.path.join(self.dataset_root, filename) for filename in self.dataset_filename])
         else:
             print("Dataset is found in local directory")
-        raw_train, raw_val, raw_test = self.read_dataset()
-        print(raw_train)
+        self.raw_text_pair = self.read_dataset()
 
     def download_dataset(self):
         def bar_custom(current, total, width=80):
@@ -109,11 +112,8 @@ class Multi30kDatasetEN_DE(Dataset):
                 op.close()
 
     def read_dataset(self):
-        list_val_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.val_dataset_filename]
-        list_train_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.train_dataset_filename]
-        list_test_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.test_dataset_filename]
-        return self.read_en_de_txts(list_train_path), self.read_en_de_txts(list_val_path), self.read_en_de_txts(
-            list_test_path)
+        list_txt_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.val_dataset_filename]
+        return self.read_en_de_txts(list_txt_path)
 
     def read_en_de_txts(self, list_of_path):
         list_of_strings = []
