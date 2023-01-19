@@ -4,7 +4,7 @@ from einops import rearrange
 from torch import nn
 from torch.utils.data import DataLoader
 
-from dataset import AliceInTheWonderlandDataset
+from dataset import AliceInTheWonderlandDataset, Multi30kDatasetEN_DE
 from vanilla_transformer import VanillaTransformer
 from pathlib import Path
 
@@ -58,4 +58,6 @@ def train(model, dataset_loader, optimizer, criterion, num_epochs):
         print(f"Epoch {epoch} loss : {loss_epoch}")
 
 if __name__ == '__main__':
-    train(model, dataset_loader, optimizer, criterion, num_epochs)
+    # train(model, dataset_loader, optimizer, criterion, num_epochs)
+    dataset = Multi30kDatasetEN_DE()
+

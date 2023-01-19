@@ -85,7 +85,9 @@ class Multi30kDatasetEN_DE(Dataset):
             self.unzip_files([os.path.join(self.dataset_root, filename) for filename in self.dataset_filename])
         else:
             print("Dataset is found in local directory")
-        self.raw_text_pair = self.read_dataset()
+        english_raw_list, german_raw_list = self.read_dataset()
+        english_tokenized_list = [word_tokenize(text, language="english") for text in english_raw_list]
+        german_tokenized_list = [word_tokenize(text, language="german") for text in german_raw_list]
 
     def download_dataset(self):
         def bar_custom(current, total, width=80):
@@ -113,17 +115,16 @@ class Multi30kDatasetEN_DE(Dataset):
 
     def read_dataset(self):
         list_txt_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.val_dataset_filename]
-        return self.read_en_de_txts(list_txt_path)
+        english_strings, german_strings = self.read_en_de_txts(list_txt_path)
+        return english_strings, german_strings
 
     def read_en_de_txts(self, list_of_path):
-        list_of_strings = []
+        german_strings = []
+        english_strings = []
         for english_path in list_of_path:
             german_path = english_path.replace(".en", ".de")
             with open(english_path, "r") as f:
-                english_strings = f.readlines()
+                english_strings += f.readlines()
             with open(german_path, "r") as f:
-                german_strings = f.readlines()
-            en_de = [(en.replace("\n", ""), de.replace("\n", ""))
-                     for en, de in zip(english_strings, german_strings)]
-            list_of_strings += en_de
-        return list_of_strings
+                german_strings += f.readlines()
+        return english_strings, german_strings
