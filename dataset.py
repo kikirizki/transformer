@@ -68,12 +68,10 @@ class AliceInTheWonderlandDataset(Dataset):
 class Multi30kDatasetEN_DE(Dataset):
     def __init__(self, dataset_root="multi30k_dataset"):
         dataset_root_link = "https://github.com/multi30k/dataset/raw/master/data/task1/raw/"
-        self.test_dataset_filename = ["test_2016_flickr.de.gz", "test_2017_flickr.de.gz", "test_2017_mscoco.de.gz",
-                                      "test_2018_flickr.de.gz",
-                                      "test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
+        self.test_dataset_filename = ["test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
                                       "test_2018_flickr.en.gz"]
-        self.train_dataset_filename = ["train.de.gz", "train.de.gz"]
-        self.val_dataset_filename = ["val.en.gz", "val.de.gz"]
+        self.train_dataset_filename = ["train.en.gz"]
+        self.val_dataset_filename = ["val.en.gz"]
         self.dataset_filename = self.test_dataset_filename + self.train_dataset_filename + self.val_dataset_filename
         self.dataset_links = [os.path.join(dataset_root_link, filename) for filename in self.dataset_filename]
         self.dataset_root = dataset_root
@@ -84,7 +82,7 @@ class Multi30kDatasetEN_DE(Dataset):
         else:
             print("Dataset is found in local directory")
         raw_train, raw_val, raw_test = self.read_dataset()
-
+        print(raw_train)
 
     def download_dataset(self):
         def bar_custom(current, total, width=80):
@@ -114,10 +112,18 @@ class Multi30kDatasetEN_DE(Dataset):
         list_val_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.val_dataset_filename]
         list_train_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.train_dataset_filename]
         list_test_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.test_dataset_filename]
-        return self.read_txts(list_train_path), self.read_txts(list_val_path), self.read_txts(list_test_path)
-    def read_txts(self, list_of_path):
+        return self.read_en_de_txts(list_train_path), self.read_en_de_txts(list_val_path), self.read_en_de_txts(
+            list_test_path)
+
+    def read_en_de_txts(self, list_of_path):
         list_of_strings = []
-        for path in list_of_path:
-            with open(path, "r") as f:
-                list_of_strings += f.readlines()
+        for english_path in list_of_path:
+            german_path = english_path.replace(".en", ".de")
+            with open(english_path, "r") as f:
+                english_strings = f.readlines()
+            with open(german_path, "r") as f:
+                german_strings = f.readlines()
+            en_de = [(en.replace("\n", ""), de.replace("\n", ""))
+                     for en, de in zip(english_strings, german_strings)]
+            list_of_strings += en_de
         return list_of_strings
