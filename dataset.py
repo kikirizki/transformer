@@ -120,12 +120,16 @@ class Multi30kDatasetEN_DE(Dataset):
         padded_english_words = self.pad_words(english_word_list, self.english_max_seq)
         padded_german_words = self.pad_words(german_word_list, self.german_max_seq)
 
-        padded_english_words = [self.start_token]+padded_english_words+[self.end_token]
-        padded_german_words = [self.start_token]+padded_german_words+[self.end_token]
+        padded_english_words = [self.start_token] + padded_english_words + [self.end_token]
+        padded_german_words = [self.start_token] + padded_german_words + [self.end_token]
 
         x = self.words2indexes(padded_english_words, self.english_vocab)
         y = self.words2indexes(padded_german_words, self.german_vocab)
         return x, y
+
+    def __len__(self):
+        assert (len(self.english_tokenized_list) == len(self.german_tokenized_list))
+        return len(self.english_tokenized_list)
 
     def download_dataset(self):
         def bar_custom(current, total, width=80):
