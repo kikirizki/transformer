@@ -10,8 +10,8 @@ from pathlib import Path
 
 d_model = 512
 n_heads = 64
-batch_Size = 16
-ff_hidden_size = 2
+batch_Size = 128
+ff_hidden_size = 2048
 n_words = 7
 dropout_prob = 0.1
 save_interval = 5
