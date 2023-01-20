@@ -125,7 +125,7 @@ class Multi30kDatasetEN_DE(Dataset):
 
         x = self.words2indexes(padded_english_words, self.english_vocab)
         y = self.words2indexes(padded_german_words, self.german_vocab)
-        return x, y
+        return torch.tensor(x), torch.tensor(y)
 
     def __len__(self):
         assert (len(self.english_tokenized_list) == len(self.german_tokenized_list))
