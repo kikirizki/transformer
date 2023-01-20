@@ -93,8 +93,8 @@ class Multi30kDatasetEN_DE(Dataset):
         self.pad_token = "<PAD>"
         self.english_vocab = self.get_vocab(self.english_tokenized_list)
         self.german_vocab = self.get_vocab(self.german_tokenized_list)
-        self.english_max_seq = self.count_max_sequence(self.english_tokenized_list)
-        self.german_max_seq = self.count_max_sequence(self.german_tokenized_list)
+        self.english_max_seq = self.count_max_sequence(self.english_tokenized_list)+len([self.end_token,self.start_token])
+        self.german_max_seq = self.count_max_sequence(self.german_tokenized_list)+len([self.end_token,self.start_token])
 
     def words2indexes(self, list_of_word, vocab):
         word2index_dict = {word: idx for idx, word in enumerate(vocab)}
