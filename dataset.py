@@ -69,20 +69,17 @@ class Multi30kDatasetEN_DE(Dataset):
     def __init__(self, split="train", dataset_root="multi30k_dataset"):
         dataset_root_link = "https://github.com/multi30k/dataset/raw/master/data/task1/raw/"
 
-        self.test_dataset_filename = ["test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
-                                      "test_2018_flickr.en.gz"]
-        self.train_dataset_filename = ["train.en.gz"]
-        self.val_dataset_filename = ["val.en.gz"]
+        self.en_dataset_filename = ["test_2016_flickr.en.gz", "test_2017_flickr.en.gz", "test_2017_mscoco.en.gz",
+                                    "test_2018_flickr.en.gz", "train.en.gz", "val.en.gz"]
+        self.de_dataset_filename = [fname.replace(".en", ".de") for fname in self.en_dataset_filename]
+        self.all_dataset_filename = self.en_dataset_filename + self.de_dataset_filename
 
-        all_dataset_filename = {"train": self.train_dataset_filename, "test": self.test_dataset_filename,
-                                "val": self.val_dataset_filename}
-        self.dataset_filename = all_dataset_filename[split]
-        self.dataset_links = [os.path.join(dataset_root_link, filename) for filename in self.dataset_filename]
+        self.dataset_links = [os.path.join(dataset_root_link, filename) for filename in self.all_dataset_filename]
         self.dataset_root = dataset_root
         if not self.is_downloaded():
             print("Dataset is not found in local directory")
             self.download_dataset()
-            self.unzip_files([os.path.join(self.dataset_root, filename) for filename in self.dataset_filename])
+            self.unzip_files([os.path.join(self.dataset_root, filename) for filename in self.all_dataset_filename])
         else:
             print("Dataset is found in local directory")
         english_raw_list, german_raw_list = self.read_dataset()
@@ -93,8 +90,18 @@ class Multi30kDatasetEN_DE(Dataset):
         self.pad_token = "<PAD>"
         self.english_vocab = self.get_vocab(self.english_tokenized_list)
         self.german_vocab = self.get_vocab(self.german_tokenized_list)
-        self.english_max_seq = self.count_max_sequence(self.english_tokenized_list)+len([self.end_token,self.start_token])
-        self.german_max_seq = self.count_max_sequence(self.german_tokenized_list)+len([self.end_token,self.start_token])
+        self.english_max_seq = self.count_max_sequence(self.english_tokenized_list) + len(
+            [self.end_token, self.start_token])
+        self.german_max_seq = self.count_max_sequence(self.german_tokenized_list) + len(
+            [self.end_token, self.start_token])
+
+        n_data = int(len(self.english_tokenized_list) * 0.8)
+        if split == "train":
+            self.english_tokenized_list = self.english_tokenized_list[0:n_data]
+            self.german_tokenized_list = self.german_tokenized_list[0:n_data]
+        if split == "val":
+            self.english_tokenized_list = self.english_tokenized_list[n_data:]
+            self.german_tokenized_list = self.german_tokenized_list[n_data:]
 
     def words2indexes(self, list_of_word, vocab):
         word2index_dict = {word: idx for idx, word in enumerate(vocab)}
@@ -142,7 +149,7 @@ class Multi30kDatasetEN_DE(Dataset):
             wget.download(data_url, out=self.dataset_root, bar=bar_custom)
 
     def is_downloaded(self):
-        for filename in self.dataset_filename:
+        for filename in self.all_dataset_filename:
             if not os.path.exists(os.path.join(self.dataset_root, filename)):
                 return False
         return True
@@ -156,7 +163,7 @@ class Multi30kDatasetEN_DE(Dataset):
                 op.close()
 
     def read_dataset(self):
-        list_txt_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.val_dataset_filename]
+        list_txt_path = [f'{self.dataset_root}/{item.replace(".gz", ".txt")}' for item in self.en_dataset_filename]
         english_strings, german_strings = self.read_en_de_txts(list_txt_path)
         return english_strings, german_strings
 
