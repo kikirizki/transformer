@@ -11,7 +11,7 @@ class MultiHeadAttention(nn.Module):
         self.d_k = d_model // num_heads
         self.num_heads = num_heads
         self.d_model = d_model
-        self.soft_argmax = nn.Softmax(-1)
+        self.soft_argmax = nn.Softmax(1)
         self.split_head = nn.Linear(d_model, self.d_k * num_heads)
         self.W_o = nn.Linear(self.num_heads * self.d_k, d_model)
 
