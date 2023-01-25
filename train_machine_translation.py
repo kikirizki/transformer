@@ -13,7 +13,7 @@ d_model = 512
 n_heads = 64
 batch_Size = 128
 ff_hidden_size = 2048
-n_words = 7
+
 dropout_prob = 0.1
 save_interval = 1
 num_epochs = 100
@@ -35,7 +35,9 @@ criterion = nn.CrossEntropyLoss()
 
 
 def train(model, dataset_loader, optimizer, criterion, num_epochs):
-    mask = torch.triu(torch.ones(n_words, n_words) * float('-inf'), diagonal=1)
+    src_mask = torch.triu(torch.ones(62,62) * float('-inf'), diagonal=1).unsqueeze(-1).unsqueeze(-1).to(device)
+    tgt_mask = torch.triu(torch.ones(62,62) * float('-inf'), diagonal=1).unsqueeze(-1).unsqueeze(-1).to(device)
+
     model.train()
     for epoch in range(num_epochs):
         loss_epoch = 0.0
@@ -43,12 +45,13 @@ def train(model, dataset_loader, optimizer, criterion, num_epochs):
             x, y = batch
             x = x.to(device)
             y = y.to(device)
+
             encoder_input = rearrange(x, "batch_size sequence_length -> sequence_length batch_size")
             y = rearrange(y, "batch_size sequence_length -> sequence_length batch_size")
 
             decoder_input = y[:-1, :]
 
-            output = model(encoder_input, decoder_input, mask)
+            output = model(encoder_input, decoder_input, source_mask=src_mask, target_mask=tgt_mask)
 
             target = torch.nn.functional.one_hot(y % 1, num_classes=n_german_vocabs)[1:, :].view(-1,
                                                                                                  n_german_vocabs).to(
@@ -69,3 +72,4 @@ def train(model, dataset_loader, optimizer, criterion, num_epochs):
 
 if __name__ == '__main__':
     train(model, dataset_loader, optimizer, criterion, num_epochs)
+

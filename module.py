@@ -69,28 +69,27 @@ class TransformersLayer(nn.Module):
                  self_attention: MultiHeadAttention,
                  feed_forward: FeedForward,
                  dropout_probs: float,
-                 source_attention: MultiHeadAttention = None,
-                 source_mask=None):
+                 source_attention: MultiHeadAttention = None):
         super(TransformersLayer, self).__init__()
         self.self_attention = self_attention
         self.source_attention = source_attention
-        self.source_mask = source_mask
         self.feed_forward = feed_forward
         self.dropout = nn.Dropout(dropout_probs)
 
         self.layernorm_self_attention = nn.LayerNorm([d_model])
-        self.layernorm_feedforward = nn.LayerNorm([d_model])
-        if source_attention is not None:
+        if self.source_attention is not None:
             self.layernorm_source_attention = nn.LayerNorm([d_model])
 
-    def forward(self, x, src=None, src_mask=None):
+        self.layernorm_feedforward = nn.LayerNorm([d_model])
+
+    def forward(self, x, src=None, mask=None, src_mask=None):
         x_ = self.layernorm_self_attention(x)
-        self_attention_matrices = self.self_attention(key=x_, query=x_, value=x_)
+        self_attention_matrices = self.self_attention(key=x_, query=x_, value=x_, mask=mask)
         x = self.dropout(self_attention_matrices) + x
 
         if src is not None:
             x_ = self.layernorm_source_attention(x)
-            source_attention_matrices = self.source_attention(query=x_, key=src, value=src)
+            source_attention_matrices = self.source_attention(query=x_, key=src, value=src, mask=src_mask)
             x = self.dropout(source_attention_matrices) + x
 
         x_ = self.layernorm_feedforward(x)
@@ -106,8 +105,8 @@ class TransformersEncoder(nn.Module):
         self.self_attention = MultiHeadAttention(d_model, n_heads)
         self.transformer_layer = TransformersLayer(d_model, self.self_attention, self.feed_forward, dropout_prob)
 
-    def forward(self, x):
-        return self.transformer_layer(x)
+    def forward(self, x,mask):
+        return self.transformer_layer(x,mask=mask)
 
 
 class TransformersDecoder(nn.Module):
@@ -122,5 +121,5 @@ class TransformersDecoder(nn.Module):
                                                    dropout_prob,
                                                    self.source_attention)
 
-    def forward(self, x, src, mask = None):
-        return self.transformer_layer(x, src, src_mask = mask)
+    def forward(self, x, src, mask=None,src_mask=None):
+        return self.transformer_layer(x, src, mask=mask,src_mask=mask)
