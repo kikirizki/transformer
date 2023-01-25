@@ -7,14 +7,14 @@ from torch.utils.data import DataLoader
 from dataset import Multi30kDatasetEN_DE
 from vanilla_transformer import VanillaTransformer
 from pathlib import Path
-
+from tqdm import tqdm
 d_model = 512
 n_heads = 64
 batch_Size = 128
 ff_hidden_size = 2048
 n_words = 7
 dropout_prob = 0.1
-save_interval = 5
+save_interval = 1
 num_epochs = 100
 checkpoint_path = "checkpoint"
 Path(checkpoint_path).mkdir(parents=True, exist_ok=True)
@@ -35,7 +35,7 @@ def train(model, dataset_loader, optimizer, criterion, num_epochs):
     model.train()
     for epoch in range(num_epochs):
         loss_epoch = 0.0
-        for i, batch in enumerate(dataset_loader):
+        for batch in tqdm(dataset_loader):
             x, y = batch
 
             encoder_input = rearrange(x, "batch_size sequence_length -> sequence_length batch_size")
