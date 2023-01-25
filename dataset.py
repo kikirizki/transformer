@@ -91,9 +91,9 @@ class Multi30kDatasetEN_DE(Dataset):
         self.english_vocab = self.get_vocab(self.english_tokenized_list)
         self.german_vocab = self.get_vocab(self.german_tokenized_list)
         self.english_max_seq = self.count_max_sequence(self.english_tokenized_list) + len(
-            [self.end_token, self.start_token])
+            [self.end_token, self.start_token, self.pad_token])
         self.german_max_seq = self.count_max_sequence(self.german_tokenized_list) + len(
-            [self.end_token, self.start_token])
+            [self.end_token, self.start_token, self.pad_token])
 
         n_data = int(len(self.english_tokenized_list) * 0.8)
         if split == "train":
