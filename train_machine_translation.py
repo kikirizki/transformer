@@ -8,6 +8,7 @@ from dataset import Multi30kDatasetEN_DE
 from vanilla_transformer import VanillaTransformer
 from pathlib import Path
 from tqdm import tqdm
+
 d_model = 512
 n_heads = 64
 batch_Size = 128
@@ -16,6 +17,7 @@ n_words = 7
 dropout_prob = 0.1
 save_interval = 1
 num_epochs = 100
+
 checkpoint_path = "checkpoint"
 Path(checkpoint_path).mkdir(parents=True, exist_ok=True)
 
@@ -25,7 +27,9 @@ n_german_vocabs = len(en_de_dataset.german_vocab)
 german_max_seq = en_de_dataset.german_max_seq
 english_max_seq = en_de_dataset.english_max_seq
 
-model = VanillaTransformer(d_model, n_german_vocabs, ff_hidden_size, n_heads, dropout_prob)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+model = VanillaTransformer(d_model, n_german_vocabs, ff_hidden_size, n_heads, dropout_prob).to(device)
 optimizer = torch.optim.Adam(params=model.parameters(), betas=(0.9, 0.98), eps=1e-9)
 criterion = nn.CrossEntropyLoss()
 
@@ -37,7 +41,8 @@ def train(model, dataset_loader, optimizer, criterion, num_epochs):
         loss_epoch = 0.0
         for batch in tqdm(dataset_loader):
             x, y = batch
-
+            x = x.to(device)
+            y = y.to(device)
             encoder_input = rearrange(x, "batch_size sequence_length -> sequence_length batch_size")
             y = rearrange(y, "batch_size sequence_length -> sequence_length batch_size")
 
