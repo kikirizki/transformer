@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 d_model = 512
 n_heads = 64
-batch_Size = 128
+batch_Size = 8
 ff_hidden_size = 2048
 
 dropout_prob = 0.1
@@ -30,13 +30,17 @@ english_max_seq = en_de_dataset.english_max_seq
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model = VanillaTransformer(d_model, n_german_vocabs, ff_hidden_size, n_heads, dropout_prob).to(device)
-optimizer = torch.optim.Adam(params=model.parameters(), betas=(0.9, 0.98), eps=1e-9)
+optimizer = torch.optim.Adam(params=model.parameters(),lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
 criterion = nn.CrossEntropyLoss()
+
+def generate_square_subsequent_mask(sz):
+    mask = (torch.triu(torch.ones((sz, sz), device=device)) == 1).transpose(0, 1)
+    return mask
 
 
 def train(model, dataset_loader, optimizer, criterion, num_epochs):
-    src_mask = torch.triu(torch.ones(62,62) * float('-inf'), diagonal=1).unsqueeze(-1).unsqueeze(-1).to(device)
-    tgt_mask = torch.triu(torch.ones(62,62) * float('-inf'), diagonal=1).unsqueeze(-1).unsqueeze(-1).to(device)
+    tgt_mask = generate_square_subsequent_mask(62).unsqueeze(-1).unsqueeze(-1)
+    src_mask = torch.ones((62,62), device=device).type(torch.bool).unsqueeze(-1).unsqueeze(-1)
 
     model.train()
     for epoch in range(num_epochs):

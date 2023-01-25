@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from module import EmbeddingWithLearnablePositionalEncoding, TransformersEncoder, TransformersDecoder
-
+from torch.nn.functional import log_softmax
 
 class VanillaTransformer(nn.Module):
     def __init__(self, d_model, n_vocab, ff_hidden_size, n_heads, dropout_prob):
@@ -15,5 +15,5 @@ class VanillaTransformer(nn.Module):
     def forward(self, encoder_input, decoder_input, target_mask=None, source_mask=None):
         encoder_output = self.encoder(self.embedding(encoder_input), source_mask)
         decoder_output = self.decoder(self.embedding(decoder_input), src=encoder_output, mask=target_mask)
-        output = self.linear(decoder_output)
+        output = log_softmax(self.linear(decoder_output),dim=-1)
         return output
