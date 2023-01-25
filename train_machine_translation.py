@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 d_model = 512
 n_heads = 64
-batch_Size = 8
+batch_Size = 128
 ff_hidden_size = 2048
 
 dropout_prob = 0.1
