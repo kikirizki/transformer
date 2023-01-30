@@ -12,15 +12,18 @@ class MultiHeadAttention(nn.Module):
         self.num_heads = num_heads
         self.d_model = d_model
         self.soft_argmax = nn.Softmax(1)
-        self.split_head = nn.Linear(d_model, self.d_k * num_heads)
+        self.query_proj = nn.Linear(d_model, self.d_k * num_heads)
+        self.key_proj = nn.Linear(d_model, self.d_k * num_heads)
+        self.value_proj = nn.Linear(d_model, self.d_k * num_heads)
         self.W_o = nn.Linear(self.num_heads * self.d_k, d_model)
 
     def split(self, x):
-        x = self.split_head(x)
+
         x = rearrange(x, "seq_length batch_size (heads d_k) -> seq_length batch_size heads d_k", heads=self.num_heads)
         return x
 
     def forward(self, query, key, value, mask=None):
+        query, key, value = self.query_proj(query), self.key_proj(key), self.value_proj(value)
         query, key, value = self.split(query), self.split(key), self.split(value)
         score = torch.einsum(
             "q b h d, k b h d -> q k b h", query, key)
