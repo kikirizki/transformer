@@ -1,7 +1,103 @@
-import math
 import torch
 import torch.nn as nn
+import copy
+import math
 from einops import rearrange
+from torch.nn.functional import log_softmax
+
+
+class Generator(nn.Module):
+    "Define standard linear + softmax generation step."
+
+    def __init__(self, d_model, vocab):
+        super(Generator, self).__init__()
+        self.proj = nn.Linear(d_model, vocab)
+
+    def forward(self, x):
+        return log_softmax(self.proj(x), dim=-1)
+
+
+class EncoderDecoder(nn.Module):
+    def __init__(self, encoder, decoder, src_embd, tgt_embd, generator):
+        super(EncoderDecoder, self).__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+        self.src_embd = src_embd
+        self.tgt_embd = tgt_embd
+        self.generator = generator
+
+    def forward(self, x, tgt, mask, src_mask):
+        return self.generator(self.decode(tgt, self.encode(x, src_mask), mask, src_mask))
+
+    def encode(self, x, mask):
+        return self.encoder(self.src_embd(x), mask)
+
+    def decode(self, x, memory, mask, src_mask):
+        return self.decoder(self.tgt_embd(x), memory, mask, src_mask)
+
+
+def clones(layer, n):
+    return nn.ModuleList([copy.deepcopy(layer) for _ in range(n)])
+
+
+class Encoder(nn.Module):
+    def __init__(self, d_model, layer, n):
+        super(Encoder, self).__init__()
+        self.layers = clones(layer, n)
+        self.norm = nn.LayerNorm([d_model])
+
+    def forward(self, x, mask):
+        for layer in self.layers:
+            x = layer(x, mask)
+        return self.norm(x)
+
+
+class AddNorm(nn.Module):
+    def __init__(self, d_model, dropout_prob):
+        super(AddNorm, self).__init__()
+        self.norm = nn.LayerNorm([d_model])
+        self.dropout = nn.Dropout(dropout_prob)
+
+    def forward(self, x, sublayer):
+        return self.dropout(self.norm(sublayer(x))) + x
+
+
+class EncoderLayer(nn.Module):
+    def __init__(self, d_model, self_attn, feed_forward, dropout):
+        super(EncoderLayer, self).__init__()
+        self.skip_conn = clones(AddNorm(d_model, dropout), 2)
+        self.self_attn = self_attn
+        self.ffn = feed_forward
+
+    def forward(self, x, mask):
+        x = self.skip_conn[0](x, lambda x: self.self_attn(x, x, x, mask))
+        return self.skip_conn[0](x, self.ffn)
+
+
+class Decoder(nn.Module):
+    def __init__(self, d_model, layer, n):
+        super(Decoder, self).__init__()
+        self.layers = clones(layer, n)
+        self.norm = nn.LayerNorm([d_model])
+
+    def forward(self, x, mem, src_mask, tgt_mask):
+        for layer in self.layers:
+            x = layer(x, mem, src_mask, tgt_mask)
+        return self.norm(x)
+
+
+class DecoderLayer(nn.Module):
+    def __init__(self, d_model, self_attn, src_attn, feed_forward, dropout_prob):
+        super(DecoderLayer, self).__init__()
+        self.skip_conn = clones(AddNorm(d_model, dropout_prob), 3)
+        self.self_attn = self_attn
+        self.src_attn = src_attn
+        self.ffn = feed_forward
+
+    def forward(self, x, mem, src_mask, tgt_mask):
+        x = self.skip_conn[0](x, lambda x: self.self_attn(x, x, x, tgt_mask))
+        x = self.skip_conn[0](x, lambda x: self.self_attn(x, mem, mem, tgt_mask, src_mask))
+        return self.skip_conn[0](x, self.ffn)
 
 
 class MultiHeadAttention(nn.Module):
@@ -21,7 +117,7 @@ class MultiHeadAttention(nn.Module):
         x = rearrange(x, "seq_length batch_size (heads d_k) -> seq_length batch_size heads d_k", heads=self.num_heads)
         return x
 
-    def forward(self, query, key, value, mask=None):
+    def forward(self, query, key, value, mask=None, src_mask=None):
         query, key, value = self.query_proj(query), self.key_proj(key), self.value_proj(value)
         query, key, value = self.split_head(query), self.split_head(key), self.split_head(value)
         score = torch.einsum(
@@ -63,65 +159,3 @@ class FeedForward(nn.Module):
         for layer in self.layer_list:
             x = layer(x)
         return x
-
-
-class TransformersLayer(nn.Module):
-    def __init__(self,
-                 d_model,
-                 self_attention: MultiHeadAttention,
-                 feed_forward: FeedForward,
-                 dropout_probs: float,
-                 source_attention: MultiHeadAttention = None):
-        super(TransformersLayer, self).__init__()
-        self.self_attention = self_attention
-        self.source_attention = source_attention
-        self.feed_forward = feed_forward
-        self.dropout = nn.Dropout(dropout_probs)
-
-        self.layernorm_self_attention = nn.LayerNorm([d_model])
-        if self.source_attention is not None:
-            self.layernorm_source_attention = nn.LayerNorm([d_model])
-
-        self.layernorm_feedforward = nn.LayerNorm([d_model])
-
-    def forward(self, x, src=None, mask=None, src_mask=None):
-        x_ = self.layernorm_self_attention(x)
-        self_attention_matrices = self.self_attention(key=x_, query=x_, value=x_, mask=mask)
-        x = self.dropout(self_attention_matrices) + x
-
-        if src is not None:
-            x_ = self.layernorm_source_attention(x)
-            source_attention_matrices = self.source_attention(query=x_, key=src, value=src, mask=src_mask)
-            x = self.dropout(source_attention_matrices) + x
-
-        x_ = self.layernorm_feedforward(x)
-        ff = self.feed_forward(x_)
-        x = self.dropout(ff) + x
-        return x
-
-
-class TransformersEncoder(nn.Module):
-    def __init__(self, d_model, ff_hidden_size, n_heads, dropout_prob):
-        super(TransformersEncoder, self).__init__()
-        self.feed_forward = FeedForward(d_model, ff_hidden_size, dropout_prob)
-        self.self_attention = MultiHeadAttention(d_model, n_heads)
-        self.transformer_layer = TransformersLayer(d_model, self.self_attention, self.feed_forward, dropout_prob)
-
-    def forward(self, x,mask):
-        return self.transformer_layer(x,mask=mask)
-
-
-class TransformersDecoder(nn.Module):
-    def __init__(self, d_model, ff_hidden_size, n_heads, dropout_prob):
-        super(TransformersDecoder, self).__init__()
-        self.feed_forward = FeedForward(d_model, ff_hidden_size, dropout_prob)
-        self.self_attention = MultiHeadAttention(d_model, n_heads)
-        self.source_attention = MultiHeadAttention(d_model, n_heads)
-        self.transformer_layer = TransformersLayer(d_model,
-                                                   self.self_attention,
-                                                   self.feed_forward,
-                                                   dropout_prob,
-                                                   self.source_attention)
-
-    def forward(self, x, src, mask=None,src_mask=None):
-        return self.transformer_layer(x, src, mask=mask,src_mask=mask)
